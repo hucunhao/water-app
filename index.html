@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>水滴喝水</title>
+<meta name="description" content="水滴喝水：简单可爱的喝水记录与提醒小工具">
+<meta name="theme-color" content="#4a9dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="水滴">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- 今天 -->
+  <section class="page active" id="page-today">
+    <header class="top">
+      <div>
+        <div class="hello" id="hello">你好呀</div>
+        <div class="date" id="todayDate"></div>
+      </div>
+      <div class="streak" id="streak" title="连续达标天数">🔥 0 天</div>
+    </header>
+
+    <div class="banner hidden" id="remindBanner">
+      <span>💧 该喝水啦！补充一杯，身体会感谢你～</span>
+      <button id="bannerClose" aria-label="关闭">×</button>
+    </div>
+
+    <div class="glass-wrap">
+      <svg id="glass" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <clipPath id="circleClip"><circle cx="100" cy="100" r="88"/></clipPath>
+        </defs>
+        <circle cx="100" cy="100" r="94" class="glass-ring"/>
+        <circle cx="100" cy="100" r="88" class="glass-bg"/>
+        <g clip-path="url(#circleClip)">
+          <g id="waterGroup">
+            <path id="wave2" class="wave back"/>
+            <path id="wave1" class="wave front"/>
+          </g>
+        </g>
+      </svg>
+      <div class="glass-text">
+        <div class="pct" id="pct">0%</div>
+        <div class="amount"><b id="drank">0</b> / <span id="goalText">2000</span> ml</div>
+        <div class="remain" id="remain">还差 2000 ml</div>
+      </div>
+    </div>
+
+    <div class="next" id="nextRemind">⏰ 提醒未开启</div>
+
+    <div class="types" id="types"></div>
+    <div class="cups" id="cups"></div>
+
+    <button class="drink-btn" id="drinkBtn">
+      <span class="drop">💧</span> 喝一杯 <span id="drinkBtnSub">200 ml</span>
+    </button>
+
+    <div class="card">
+      <div class="card-title">今日记录 <span class="muted" id="logCount"></span></div>
+      <ul class="log-list" id="logList"></ul>
+    </div>
+  </section>
+
+  <!-- 统计 -->
+  <section class="page" id="page-stats">
+    <header class="top"><div class="title">统计</div></header>
+    <div class="seg" id="statSeg">
+      <button data-v="day" class="on">日</button>
+      <button data-v="week">周</button>
+      <button data-v="month">月</button>
+    </div>
+    <div class="range-nav">
+      <button id="prevRange" aria-label="上一段">‹</button>
+      <span id="rangeLabel"></span>
+      <button id="nextRange" aria-label="下一段">›</button>
+    </div>
+    <div class="card chart-card">
+      <svg id="chart" viewBox="0 0 340 220" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="card">
+      <div class="card-title">饮品构成</div>
+      <div id="typeBreakdown"></div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="page" id="page-settings">
+    <header class="top"><div class="title">设置</div></header>
+
+    <div class="card">
+      <div class="card-title">每日目标</div>
+      <div class="row"><label>性别</label>
+        <div class="seg small" id="genderSeg">
+          <button data-v="male">男</button><button data-v="female">女</button>
+        </div>
+      </div>
+      <div class="row"><label for="weight">体重</label>
+        <div><input type="number" id="weight" min="20" max="200" step="1" inputmode="numeric"> kg</div>
+      </div>
+      <div class="row"><label>建议目标</label><div><b id="suggested">—</b> ml</div></div>
+      <div class="row"><label for="goalInput">我的目标</label>
+        <div><input type="number" id="goalInput" min="500" max="6000" step="50" inputmode="numeric"> ml</div>
+      </div>
+      <button class="link-btn" id="useSuggested">使用建议目标</button>
+      <p class="hint">建议值按体重估算（男约 35 ml/kg，女约 31 ml/kg），仅作参考，运动、天热时可适当增加。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">喝水提醒</div>
+      <div class="row"><label for="remindOn">开启提醒</label>
+        <label class="switch"><input type="checkbox" id="remindOn"><span></span></label>
+      </div>
+      <div class="row"><label for="interval">提醒间隔</label>
+        <select id="interval">
+          <option value="30">30 分钟</option><option value="45">45 分钟</option>
+          <option value="60">1 小时</option><option value="90">1.5 小时</option>
+          <option value="120">2 小时</option>
+        </select>
+      </div>
+      <div class="row"><label for="startTime">开始时间</label><input type="time" id="startTime"></div>
+      <div class="row"><label for="endTime">结束时间</label><input type="time" id="endTime"></div>
+      <div class="row"><label for="stopWhenDone">达标后不再提醒</label>
+        <label class="switch"><input type="checkbox" id="stopWhenDone"><span></span></label>
+      </div>
+      <div class="btn-row">
+        <button class="ghost" id="askNotify">允许系统通知</button>
+        <button class="ghost" id="testNotify">测试提醒</button>
+      </div>
+      <p class="hint" id="notifyStatus"></p>
+      <p class="hint">⚠️ 网页版提醒只在「水滴」打开时最可靠。iPhone 需 iOS 16.4 以上、先「添加到主屏幕」再从主屏幕打开，才能弹系统通知；完全关闭后的后台推送需要服务器支持，本练手版没有做。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">杯子容量</div>
+      <div class="row"><label for="customCup">自定义杯子</label>
+        <div><input type="number" id="customCup" min="10" max="2000" step="10" inputmode="numeric"> ml</div>
+      </div>
+      <p class="hint">饮品折算计入喝水量：白开水 ×1，茶 / 牛奶 / 果汁 ×0.9，咖啡 / 饮料 / 汤 ×0.8。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">数据</div>
+      <div class="btn-row">
+        <button class="ghost" id="exportCsv">导出 CSV</button>
+        <button class="ghost" id="exportJson">导出 JSON</button>
+      </div>
+      <div class="btn-row">
+        <label class="ghost file-btn">导入 JSON<input type="file" id="importJson" accept="application/json,.json"></label>
+        <button class="ghost danger" id="clearAll">清空数据</button>
+      </div>
+      <p class="hint">数据只保存在本机浏览器里，不会上传。换手机或清理 Safari 数据前请先导出备份。</p>
+    </div>
+    <p class="footer">水滴喝水 · 练手作品 v1.0</p>
+  </section>
+
+  <nav class="tabbar">
+    <button data-page="today" class="on"><span>💧</span>今天</button>
+    <button data-page="stats"><span>📊</span>统计</button>
+    <button data-page="settings"><span>⚙️</span>设置</button>
+  </nav>
+
+  <div class="toast hidden" id="toast"><span id="toastText"></span><button id="toastUndo">撤销</button></div>
+
+  <div class="modal hidden" id="customModal">
+    <div class="modal-box">
+      <div class="card-title">自定义水量</div>
+      <input type="number" id="customAmt" min="10" max="2000" step="10" inputmode="numeric" placeholder="例如 250">
+      <div class="btn-row">
+        <button class="ghost" id="customCancel">取消</button>
+        <button class="primary" id="customOk">记录</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
